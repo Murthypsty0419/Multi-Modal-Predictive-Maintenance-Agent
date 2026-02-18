@@ -1,0 +1,28 @@
+# Ignore environment and secret files
+.env
+.env.*
+# Ignore Python cache and virtual environments
+__pycache__/
+.pytest_cache/
+.venv/
+# Ignore model weights and artifacts (if not tracked)
+app/models/*.txt
+app/models/*.bin
+# Ignore data outputs and logs
+data/
+logs/
+# Allow example env
+!.env.example
+# Allow code and tracked files
+!*.py
+!*.md
+!*.toml
+!*.yml
+!*.yaml
+!*.sh
+!Dockerfile*
+!requirements.txt
+!frontend/
+!notebooks/
+!scripts/
+!tests/
