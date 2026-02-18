@@ -33,10 +33,15 @@ flowchart LR
 ### Node Descriptions
 
 **sensor_node**: Runs a LightGBM model on real-time sensor data (temperature, vibration, pressure, flow, rpm) and uses SHAP for feature importance. Outputs a risk score and anomaly notes.
+
 **service_age_node**: Checks if the pump is overdue for scheduled maintenance based on operational hours and service logs. Flags overdue assets and appends to the anomaly query.
+
 **feature_node**: Detects historical outliers by comparing current sensor readings to baseline statistics from historical logs. Outputs risk impact and top signals.
+
 **manual_context_node**: Retrieves relevant troubleshooting and warranty info from technical manuals stored in Supabase (using pgvector embeddings). Extraction and summarization are performed via external API calls.
+
 **vision_node**: Sends pump images and manual context to an external vision API, which detects leaks, corrosion, cracks, and other visual faults. Appends findings to the anomaly query.
+
 **fusion_node**: Combines all modality risk scores using configurable weights. Generates a final risk score, status label, top signals, action items, and a human-readable explanation.
 
 ---
@@ -152,9 +157,3 @@ docker compose up --build -d
 
 - See [AI_USAGE.md](./AI_USAGE.md) for details on how Gemini 3 Flash was used for architecture, debugging, and optimization.
 - For API usage and schema, see [app/schemas.py](./app/schemas.py).
-
----
-
-## License
-
-MIT License. See [LICENSE](./LICENSE) for details.
