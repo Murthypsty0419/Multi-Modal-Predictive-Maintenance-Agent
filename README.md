@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is an end-to-end asset-health agent designed for industrial centrifugal pumps. The system leverages multi-modal data—sensor readings, maintenance logs, technical manuals, and pump images—to deliver actionable, explainable health diagnostics and failure predictions.
+This is an end-to-end asset-health agent designed for industrial centrifugal pumps. The system leverages multi-modal data: sensor readings, maintenance logs, technical manuals, and pump images to deliver actionable, explainable health diagnostics and failure predictions.
 
 ---
 
