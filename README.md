@@ -21,48 +21,55 @@ Industrial pumps are critical assets in manufacturing and process industries. Un
 The core pipeline is orchestrated using a **LangGraph** linear flow, with each node responsible for a specific modality or fusion step:
 
 ```mermaid
-graph LR
-    subgraph Ingestion
-    A[Sensor Data]
-    B[Manuals/PDFs]
-    C[Images/Vision]
-    end
-
-    subgraph LangGraph Orchestration
-    D[Sensor Node: LightGBM]
-    E[Service Age Node]
-    F[Feature Node: Outliers]
-    G[Manual Context: RAG]
-    H[Vision Node: Groq]
-    end
-
-    I[Fusion Node: Weighted Risk]
-    J[XAI Diagnostic Report]
-
-    A --> D
-    D --> E
-    E --> F
-    F --> G
-    B --> G
-    G --> H
-    C --> H
-    H --> I
-    I --> J
+flowchart TD
+    A([API Request]) --> SN["Sensor Node\nLightGBM + SHAP"]
+    SN --> SAN["Service Age Node\nLogic-based overdue check"]
+    SAN -->|"transactional CSVs present"| TN["Transactional Node\nPlaceholder"]
+    SAN -->|"no transactional data"| FN
+    TN --> FN["Feature Node\nOutlier Detection"]
+    FN -->|"historical logs present"| HLN["Historical Logs Node\nPlaceholder"]
+    HLN --> MCN
+    FN -->|"instruction manual present"| MCN["Manual Context Node\nBGE-Large + Llama-3.1-8b-instant via Groq"]
+    FN -->|"no manual or historical logs"| VN
+    MCN -->|"pump image present"| VN["Vision Node\nLlama-4-Scout-17b via Groq"]
+    MCN -->|"no image"| FUSE
+    VN --> FUSE["Fusion Node\nWeighted Risk Aggregation"]
+    FUSE --> R([Diagnostic Report])
 ```
+
+---
+
+## End-to-End Flow (Node Execution & Model Usage)
+
+| Node | Condition to Run | Model(s) Used |
+|------|-----------------|---------------|
+| **sensor_node** | Always — pipeline entry point | LightGBM (local) + SHAP for explainability |
+| **service_age_node** | Always, after sensor_node | None (logic-based overdue check) |
+| **transactional_node** | Only if `maintenance_requests`, `work_done_logs`, and `service_schedules` are all present | None (placeholder) |
+| **feature_node** | Always, after service_age_node / transactional_node | None (statistical outlier detection) |
+| **historical_logs_node** | Only if `historical_logs` CSV is present | None (placeholder) |
+| **manual_context_node** | Only if `instruction_manual` PDF is present | **BAAI/bge-large-en-v1.5** (local, SentenceTransformers) for embedding & retrieval; **llama-3.1-8b-instant** (Groq API) for structured JSON extraction |
+| **vision_node** | Only if `pump_image` is present | **meta-llama/llama-4-scout-17b-16e-instruct** (Groq API) for multimodal image + text analysis |
+| **fusion_node** | Always — pipeline exit point | None (weighted risk aggregation, logic only) |
+
+### PDF Ingestion (Offline)
+Technical manuals are parsed offline using **LlamaParse** (LlamaIndex API) into text chunks. Chunks are embedded with **BAAI/bge-large-en-v1.5** and stored in Supabase with **pgvector** for later retrieval by the manual context node.
+
+---
 
 ### Node Descriptions
 
-**sensor_node**: Runs a LightGBM model on real-time sensor data (temperature, vibration, pressure, flow, rpm) and uses SHAP for feature importance. Outputs a risk score and anomaly notes.
+**sensor_node**: Runs a **LightGBM** model on real-time sensor data (temperature, vibration, pressure, flow, rpm) and uses **SHAP** for feature importance. Outputs a risk score and anomaly notes.
 
-**service_age_node**: Checks if the pump is overdue for scheduled maintenance based on operational hours and service logs. Flags overdue assets and appends to the anomaly query.
+**service_age_node**: Checks if the pump is overdue for scheduled maintenance based on operational hours and service logs. No ML model — logic-based check only. Flags overdue assets and appends to the anomaly query.
 
-**feature_node**: Detects historical outliers by comparing current sensor readings to baseline statistics from historical logs. Outputs risk impact and top signals.
+**feature_node**: Detects historical outliers by comparing current sensor readings to baseline statistics from historical logs. No ML model — statistical comparison only.
 
-**manual_context_node**: Retrieves relevant troubleshooting and warranty info from technical manuals stored in Supabase (using pgvector embeddings). Extraction and summarization are performed via external API calls.
+**manual_context_node**: Embeds the anomaly query using **BAAI/bge-large-en-v1.5** (local, SentenceTransformers) and retrieves the top-k relevant chunks from Supabase pgvector. The retrieved text is then passed to **llama-3.1-8b-instant** via the Groq API to extract structured diagnostic JSON (sensor thresholds, fault causes, warranty info).
 
-**vision_node**: Sends pump images and manual context to an external vision API, which detects leaks, corrosion, cracks, and other visual faults. Appends findings to the anomaly query.
+**vision_node**: Sends the pump image and manual context to **meta-llama/llama-4-scout-17b-16e-instruct** via the Groq API for multimodal analysis. Detects leaks, corrosion, cracks, and other visual faults. Appends findings to the anomaly query.
 
-**fusion_node**: Combines all modality risk scores using configurable weights. Generates a final risk score, status label, top signals, action items, and a human-readable explanation.
+**fusion_node**: Combines all modality risk scores using configurable weights. No ML model — generates a final risk score, status label (low/medium/high/critical), top signals, action items, and a human-readable explanation.
 
 ---
 
@@ -97,15 +104,6 @@ The API will be available at `http://localhost:8000` and the Streamlit frontend 
 	```bash
 	streamlit run frontend/app.py
 	```
-
----
-
-## Model & Component Details
-
-- **Sensor Model**: LightGBM, trained on historical pump failure data. SHAP is used for explainability.
-- **Text/Manual Context**: Manuals are chunked and stored in Supabase with pgvector. Retrieval and extraction are performed via external API calls.
-- **Vision**: Images are analyzed by an external vision API, detecting leaks, corrosion, cracks, and other faults.
-- **Fusion**: All risk scores are combined using a weighted sum. The fusion node outputs a final risk score, status label (low/medium/high/critical), top signals, action items, and a detailed explanation.
 
 ---
 
