@@ -20,20 +20,21 @@ Industrial pumps are critical assets in manufacturing and process industries. Un
 
 The core pipeline is orchestrated using a **LangGraph** linear flow, with each node responsible for a specific modality or fusion step:
 
+
 ```mermaid
 flowchart TD
-    A([API Request]) --> SN["Sensor Node\nLightGBM + SHAP"]
-    SN --> SAN["Service Age Node\nLogic-based overdue check"]
-    SAN -->|"transactional CSVs present"| TN["Transactional Node\nPlaceholder"]
+    A([API Request]) --> SN["Sensor Node<br/>LightGBM + SHAP"]
+    SN --> SAN["Service Age Node<br/>Logic-based overdue check"]
+    SAN -->|"transactional CSVs present"| TN["Transactional Node<br/>Placeholder"]
     SAN -->|"no transactional data"| FN
-    TN --> FN["Feature Node\nOutlier Detection"]
-    FN -->|"historical logs present"| HLN["Historical Logs Node\nPlaceholder"]
+    TN --> FN["Feature Node<br/>Outlier Detection"]
+    FN -->|"historical logs present"| HLN["Historical Logs Node<br/>Placeholder"]
     HLN --> MCN
-    FN -->|"instruction manual present"| MCN["Manual Context Node\nBGE-Large + Llama-3.1-8b-instant via Groq"]
+    FN -->|"instruction manual present"| MCN["Manual Context Node<br/>BGE-Large + Llama-3.1-8b-instant via Groq"]
     FN -->|"no manual or historical logs"| VN
-    MCN -->|"pump image present"| VN["Vision Node\nLlama-4-Scout-17b via Groq"]
+    MCN -->|"pump image present"| VN["Vision Node<br/>Llama-4-Scout-17b via Groq"]
     MCN -->|"no image"| FUSE
-    VN --> FUSE["Fusion Node\nWeighted Risk Aggregation"]
+    VN --> FUSE["Fusion Node<br/>Weighted Risk Aggregation"]
     FUSE --> R([Diagnostic Report])
 ```
 
