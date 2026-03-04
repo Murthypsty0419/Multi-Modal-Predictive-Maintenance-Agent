@@ -21,13 +21,33 @@ Industrial pumps are critical assets in manufacturing and process industries. Un
 The core pipeline is orchestrated using a **LangGraph** linear flow, with each node responsible for a specific modality or fusion step:
 
 ```mermaid
-flowchart LR
-	sensor_node(["Sensor Node\nLightGBM + SHAP"]) 
-	--> service_age_node(["Service Age Node\nOverdue/Interval Check"]) 
-	--> feature_node(["Feature Node\nHistorical Outlier Detection"]) 
-	--> manual_context_node(["Manual Context Node\nRAG: Manuals via Supabase/pgvector"]) 
-	--> vision_node(["Vision Node\nGroq Llama 3.2 Vision"]) 
-	--> fusion_node(["Fusion Node\nWeighted Risk + XAI"])
+graph LR
+    subgraph Ingestion
+    A[Sensor Data]
+    B[Manuals/PDFs]
+    C[Images/Vision]
+    end
+
+    subgraph LangGraph Orchestration
+    D[Sensor Node: LightGBM]
+    E[Service Age Node]
+    F[Feature Node: Outliers]
+    G[Manual Context: RAG]
+    H[Vision Node: Groq]
+    end
+
+    I[Fusion Node: Weighted Risk]
+    J[XAI Diagnostic Report]
+
+    A --> D
+    D --> E
+    E --> F
+    F --> G
+    B --> G
+    G --> H
+    C --> H
+    H --> I
+    I --> J
 ```
 
 ### Node Descriptions
@@ -139,15 +159,11 @@ docker compose up --build -d
 - The API will be available at `http://<your-server-ip>:8000`
 - The Streamlit frontend will be available at `http://<your-server-ip>:8501`
 
-### 4. (Optional) Reverse Proxy & TLS
-- For HTTPS and custom domains, set up a reverse proxy (e.g., Nginx, Caddy, or Traefik) in front of the frontend and API containers.
-- Terminate TLS at the proxy and forward requests to the appropriate container ports.
-
-### 5. Database Persistence & Backups
+### 4. Database Persistence & Backups
 - The PostgreSQL/pgvector database uses a Docker volume (`pgdata`) for persistent storage.
 - Set up regular backups of this volume for disaster recovery.
 
-### 6. Monitoring & Logs
+### 5. Monitoring & Logs
 - Use `docker compose logs -f` to monitor service logs.
 - Consider integrating with cloud monitoring or log aggregation tools for production.
 
