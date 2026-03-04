@@ -50,6 +50,6 @@ This file documents how AI tools and LLMs were used to build, debug, and optimiz
 
 ## Bottom Line
 
-AI tools like Gemini 3 Flash were useful for brainstorming, validation, and speeding up research, but all critical engineering and design decisions were made with careful review. AI was a tool, not the architect.
+AI tools like Gemini 3 Flash were useful for brainstorming, validation, and speeding up research, but all critical engineering and design decisions were made with careful review.
 
 For more details, see the main [README.md](./README.md) and the codebase.
