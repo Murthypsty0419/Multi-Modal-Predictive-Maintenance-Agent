@@ -22,26 +22,23 @@ The core pipeline is orchestrated using a **LangGraph** linear flow, with each n
 
 ```mermaid
 flowchart TD
-    A([API Request]) --> SN["Sensor Node<br/>LightGBM + SHAP"]
+    A["API Request"] --> SN["Sensor Node<br/>LightGBM + SHAP"]
     SN --> SAN["Service Age Node<br/>Logic-based overdue check"]
-    SAN --> TQ{"Transactional CSVs present?"}
-    TQ -->|"yes"| TN["Transactional Node<br/>Placeholder"]
-    TQ -->|"no"| FN["Feature Node<br/>Outlier Detection"]
+    SAN -->|"if transactional CSVs present"| TN["Transactional Node<br/>Placeholder"]
+    SAN -->|"otherwise"| FN["Feature Node<br/>Outlier Detection"]
     TN --> FN
 
-    FN --> HQ{"Historical logs present?"}
-    HQ -->|"yes"| HLN["Historical Logs Node<br/>Placeholder"]
-    HQ -->|"no"| MQ
-    HLN --> MQ{"Instruction manual present?"}
-    MQ -->|"yes"| MCN["Manual Context Node<br/>BGE-Large + Llama-3.1-8b-instant via Groq"]
-    MQ -->|"no"| READY["Context Ready"]
-    MCN --> READY
+    FN -->|"if historical logs present"| HLN["Historical Logs Node<br/>Placeholder"]
+    FN -->|"if no historical logs"| MCN["Manual Context Node<br/>BGE-Large + Llama-3.1-8b-instant via Groq"]
+    HLN --> MCN
 
-    READY --> IQ{"Pump image present?"}
-    IQ -->|"yes"| VN["Vision Node<br/>Llama-4-Scout-17b via Groq"]
-    IQ -->|"no"| FUSE["Fusion Node<br/>Weighted Risk Aggregation"]
+    MCN -->|"if pump image present"| VN["Vision Node<br/>Llama-4-Scout-17b via Groq"]
+    MCN -->|"if no image"| FUSE["Fusion Node<br/>Weighted Risk Aggregation"]
     VN --> FUSE
-    FUSE --> R([Diagnostic Report])
+    FUSE --> R["Diagnostic Report"]
+
+    classDef rounded rx:10,ry:10;
+    class A,SN,SAN,TN,FN,HLN,MCN,VN,FUSE,R rounded;
 ```
 
 ---
