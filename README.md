@@ -52,12 +52,12 @@ flowchart TD
 
 | Node | Condition to Run | Model(s) Used |
 |------|-----------------|---------------|
-| **sensor_node** | Always — pipeline entry point | LightGBM (local) + SHAP for explainability |
+| **sensor_node** | Always (pipeline entry point) | LightGBM (local) + SHAP for explainability |
 | **service_age_node** | Always, after sensor_node | None (logic-based overdue check) |
 | **feature_node** | Always, after service_age_node; handles historical log analysis when `historical_logs` is provided | None (statistical outlier detection) |
 | **manual_context_node** | Only if `instruction_manual` PDF is present | **BAAI/bge-large-en-v1.5** (local, SentenceTransformers) for embedding & retrieval; **llama-3.1-8b-instant** (Groq API) for structured JSON extraction |
 | **vision_node** | Only if `pump_image` is present | **meta-llama/llama-4-scout-17b-16e-instruct** (Groq API) for multimodal image + text analysis |
-| **fusion_node** | Always — pipeline exit point | None (weighted risk aggregation, logic only) |
+| **fusion_node** | Always (pipeline exit point) | None (weighted risk aggregation, logic only) |
 
 ### PDF Ingestion (Offline)
 Technical manuals are parsed offline using **LlamaParse** (LlamaIndex API) into text chunks. Chunks are embedded with **BAAI/bge-large-en-v1.5** and stored in Supabase with **pgvector** for later retrieval by the manual context node.
@@ -68,15 +68,15 @@ Technical manuals are parsed offline using **LlamaParse** (LlamaIndex API) into 
 
 **sensor_node**: Runs a **LightGBM** model on real-time sensor data (temperature, vibration, pressure, flow, rpm) and uses **SHAP** for feature importance. Outputs a risk score and anomaly notes.
 
-**service_age_node**: Checks if the pump is overdue for scheduled maintenance based on operational hours and service logs. No ML model — logic-based check only. Flags overdue assets and appends to the anomaly query.
+**service_age_node**: Checks if the pump is overdue for scheduled maintenance based on operational hours and service logs. Flags overdue assets and appends to the anomaly query.
 
-**feature_node**: Detects historical outliers by comparing current sensor readings to baseline statistics from historical logs. No ML model — statistical comparison only.
+**feature_node**: Detects historical outliers by comparing current sensor readings to baseline statistics from historical logs.
 
 **manual_context_node**: Embeds the anomaly query using **BAAI/bge-large-en-v1.5** (local, SentenceTransformers) and retrieves the top-k relevant chunks from Supabase pgvector. The retrieved text is then passed to **llama-3.1-8b-instant** via the Groq API to extract structured diagnostic JSON (sensor thresholds, fault causes, warranty info).
 
 **vision_node**: Sends the pump image and manual context to **meta-llama/llama-4-scout-17b-16e-instruct** via the Groq API for multimodal analysis. Detects leaks, corrosion, cracks, and other visual faults. Appends findings to the anomaly query.
 
-**fusion_node**: Combines all modality risk scores using configurable weights. No ML model — generates a final risk score, status label (low/medium/high/critical), top signals, action items, and a human-readable explanation.
+**fusion_node**: Combines all modality risk scores using configurable weights. Generates a final risk score, status label (low/medium/high/critical), top signals, action items, and a human-readable explanation.
 
 ---
 
@@ -124,18 +124,6 @@ The API will be available at `http://localhost:8000` and the Streamlit frontend 
 - **p50 Latency**: ~42s
 - **p95 Latency**: ~45.4s (cold start)
 - **Throughput**: 1.32 pumps/minute
-
----
-
-## Deliverables
-
-- Full pipeline code (API, orchestrator, nodes, frontend)
-- Dockerized deployment (docker-compose)
-- Supabase schema for manual storage
-- Model weights and config for LightGBM
-- Example manuals and sensor logs
-- Streamlit dashboard for interactive analysis
-- Mermaid.js architecture diagram (see above)
 
 ---
 
