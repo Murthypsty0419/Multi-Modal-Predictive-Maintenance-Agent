@@ -21,28 +21,24 @@ Industrial pumps are critical assets in manufacturing and process industries. Un
 The core pipeline is orchestrated using a **LangGraph** linear flow, with each node responsible for a specific modality or fusion step:
 
 ```mermaid
-flowchart TD
+flowchart LR
     A["API Request"] --> SN["Sensor Node<br/>LightGBM + SHAP"]
     SN --> SAN["Service Age Node<br/>Logic-based check"]
-    SAN -->|"if transactional CSVs present"| TN["Transactional Node<br/>Placeholder"]
-    SAN -->|"otherwise"| FN["Feature Node<br/>Outlier Detection"]
-    TN --> FN
+    SAN --> FN["Feature Node<br/>Historical logs analysis"]
 
-    FN -->|"if historical logs present"| HLN["Historical Logs Node<br/>Placeholder"]
-    FN -->|"if no historical logs"| MCN["Manual Context Node<br/>BGE-Large<br/>Llama-3.1-8b<br/>instant (Groq)"]
-    HLN --> MCN
+    FN -->|"instruction manual present"| MCN["Manual Context Node<br/>BGE-Large + Llama-3.1-8b"]
+    FN -->|"no manual"| VN["Vision Node<br/>Llama-4-Scout-17b"]
 
-    MCN -->|"if pump image present"| VN["Vision Node<br/>Llama-4-Scout<br/>17b (Groq)"]
-    MCN -->|"if no image"| FUSE["Fusion Node<br/>Weighted Risk Aggregation"]
+    MCN -->|"pump image present"| VN
+    MCN -->|"no image"| FUSE["Fusion Node<br/>Weighted risk aggregation"]
+
     VN --> FUSE
     FUSE --> R["Diagnostic Report"]
 
     classDef core fill:#EAF2FF,stroke:#7CA6FF,stroke-width:1.4px,color:#0F172A,rx:12,ry:12,padding:12px;
-    classDef aux fill:#ECFDF3,stroke:#63C08A,stroke-width:1.4px,color:#0F172A,rx:12,ry:12,padding:12px;
     classDef out fill:#FFF7E8,stroke:#E7AE53,stroke-width:1.4px,color:#0F172A,rx:12,ry:12,padding:12px;
     class A,R out;
     class SN,SAN,FN,MCN,VN,FUSE core;
-    class TN,HLN aux;
 ```
 
 ---
@@ -53,9 +49,7 @@ flowchart TD
 |------|-----------------|---------------|
 | **sensor_node** | Always — pipeline entry point | LightGBM (local) + SHAP for explainability |
 | **service_age_node** | Always, after sensor_node | None (logic-based overdue check) |
-| **transactional_node** | Only if `maintenance_requests`, `work_done_logs`, and `service_schedules` are all present | None (placeholder) |
-| **feature_node** | Always, after service_age_node / transactional_node | None (statistical outlier detection) |
-| **historical_logs_node** | Only if `historical_logs` CSV is present | None (placeholder) |
+| **feature_node** | Always, after service_age_node; handles historical log analysis when `historical_logs` is provided | None (statistical outlier detection) |
 | **manual_context_node** | Only if `instruction_manual` PDF is present | **BAAI/bge-large-en-v1.5** (local, SentenceTransformers) for embedding & retrieval; **llama-3.1-8b-instant** (Groq API) for structured JSON extraction |
 | **vision_node** | Only if `pump_image` is present | **meta-llama/llama-4-scout-17b-16e-instruct** (Groq API) for multimodal image + text analysis |
 | **fusion_node** | Always — pipeline exit point | None (weighted risk aggregation, logic only) |
