@@ -23,22 +23,26 @@ The core pipeline is orchestrated using a **LangGraph** linear flow, with each n
 ```mermaid
 flowchart TD
     A["API Request"] --> SN["Sensor Node<br/>LightGBM + SHAP"]
-    SN --> SAN["Service Age Node<br/>Logic-based overdue check"]
+    SN --> SAN["Service Age Node<br/>Logic-based check"]
     SAN -->|"if transactional CSVs present"| TN["Transactional Node<br/>Placeholder"]
     SAN -->|"otherwise"| FN["Feature Node<br/>Outlier Detection"]
     TN --> FN
 
     FN -->|"if historical logs present"| HLN["Historical Logs Node<br/>Placeholder"]
-    FN -->|"if no historical logs"| MCN["Manual Context Node<br/>BGE-Large +<br/>Llama-3.1-8b-instant via Groq"]
+    FN -->|"if no historical logs"| MCN["Manual Context Node<br/>BGE-Large<br/>Llama-3.1-8b<br/>instant (Groq)"]
     HLN --> MCN
 
-    MCN -->|"if pump image present"| VN["Vision Node<br/>Llama-4-Scout-17b via Groq"]
+    MCN -->|"if pump image present"| VN["Vision Node<br/>Llama-4-Scout<br/>17b (Groq)"]
     MCN -->|"if no image"| FUSE["Fusion Node<br/>Weighted Risk Aggregation"]
     VN --> FUSE
     FUSE --> R["Diagnostic Report"]
 
-    classDef rounded rx:10,ry:10;
-    class A,SN,SAN,TN,FN,HLN,MCN,VN,FUSE,R rounded;
+    classDef core fill:#EAF2FF,stroke:#7CA6FF,stroke-width:1.4px,color:#0F172A,rx:12,ry:12,padding:12px;
+    classDef aux fill:#ECFDF3,stroke:#63C08A,stroke-width:1.4px,color:#0F172A,rx:12,ry:12,padding:12px;
+    classDef out fill:#FFF7E8,stroke:#E7AE53,stroke-width:1.4px,color:#0F172A,rx:12,ry:12,padding:12px;
+    class A,R out;
+    class SN,SAN,FN,MCN,VN,FUSE core;
+    class TN,HLN aux;
 ```
 
 ---
