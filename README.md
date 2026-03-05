@@ -22,24 +22,23 @@ The core pipeline is orchestrated using a **LangGraph** linear flow, with each n
 
 ```mermaid
 flowchart TD
-    A["API Request"] --> SN["Sensor Node<br/>LightGBM + SHAP"]
-    SN --> SAN["Service Age Node<br/>Logic-based check"]
-    SAN -->|"historical logs present"| FN["Feature Node<br/>Historical logs analysis"]
-    SAN -->|"no historical logs"| MCN["Manual Context Node<br/>BGE-Large + Llama-3.1-8b"]
+    A[API Request] --> SN[Sensor Node]
+    SN --> SAN[Service Age Node]
+    SAN --> HCHK[historical_logs present?]
 
-    FN -->|"after historical analysis"| MCN
-    FN -->|"no manual"| VN["Vision Node<br/>Llama-4-Scout-17b"]
+    HCHK -->|yes| FN[Feature Node]
+    HCHK -->|no| MCHK[instruction_manual present?]
 
-    MCN -->|"pump image present"| VN
-    MCN -->|"no image"| FUSE["Fusion Node<br/>Weighted risk aggregation"]
+    FN --> MCHK
+    MCHK -->|yes| MCN[Manual Context Node]
+    MCHK -->|no| ICHK[pump_image present?]
+
+    MCN --> ICHK
+    ICHK -->|yes| VN[Vision Node]
+    ICHK -->|no| FUSE[Fusion Node]
 
     VN --> FUSE
-    FUSE --> R["Diagnostic Report"]
-
-    classDef core fill:#EAF2FF,stroke:#7CA6FF,stroke-width:1px,color:#0F172A,rx:8,ry:8,padding:2px;
-    classDef out fill:#FFF7E8,stroke:#E7AE53,stroke-width:1px,color:#0F172A,rx:8,ry:8,padding:2px;
-    class A,R out;
-    class SN,SAN,FN,MCN,VN,FUSE core;
+    FUSE --> R[Diagnostic Report]
 ```
 
 ---
