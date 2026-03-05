@@ -20,19 +20,26 @@ Industrial pumps are critical assets in manufacturing and process industries. Un
 
 The core pipeline is orchestrated using a **LangGraph** linear flow, with each node responsible for a specific modality or fusion step:
 
+
 ```mermaid
 flowchart LR
-    A[API Request] --> SN[Sensor Node] --> SAN[Service Age Node]
-    SAN -->|historical_logs present| FN[Feature Node]
-    SAN -->|historical_logs absent| MCN[Manual Context Node]
-    FN -->|instruction_manual present| MCN
-    FN -->|instruction_manual absent| VN[Vision Node]
-    MCN -->|pump_image present| VN
-    MCN -->|pump_image absent| FUSE[Fusion Node]
-    VN --> FUSE
-    FUSE --> R[Diagnostic Report]
-```
+	A[API Request] --> SN[Sensor Node] --> SAN[Service Age Node]
 
+	SAN --> C1((historical_logs?))
+	C1 -->|yes| FN[Feature Node]
+	C1 -->|no| C2((instruction_manual?))
+
+	FN --> C2
+	C2 -->|yes| MCN[Manual Context Node]
+	C2 -->|no| C3((pump_image?))
+
+	MCN --> C3
+	C3 -->|yes| VN[Vision Node]
+	C3 -->|no| FUSE[Fusion Node]
+
+	VN --> FUSE
+	FUSE --> R[Diagnostic Report]
+```
 
 ---
 
