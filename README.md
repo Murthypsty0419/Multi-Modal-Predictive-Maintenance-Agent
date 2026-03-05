@@ -21,12 +21,13 @@ Industrial pumps are critical assets in manufacturing and process industries. Un
 The core pipeline is orchestrated using a **LangGraph** linear flow, with each node responsible for a specific modality or fusion step:
 
 ```mermaid
-flowchart LR
+flowchart TD
     A["API Request"] --> SN["Sensor Node<br/>LightGBM + SHAP"]
     SN --> SAN["Service Age Node<br/>Logic-based check"]
-    SAN --> FN["Feature Node<br/>Historical logs analysis"]
+    SAN -->|"historical logs present"| FN["Feature Node<br/>Historical logs analysis"]
+    SAN -->|"no historical logs"| MCN["Manual Context Node<br/>BGE-Large + Llama-3.1-8b"]
 
-    FN -->|"instruction manual present"| MCN["Manual Context Node<br/>BGE-Large + Llama-3.1-8b"]
+    FN -->|"after historical analysis"| MCN
     FN -->|"no manual"| VN["Vision Node<br/>Llama-4-Scout-17b"]
 
     MCN -->|"pump image present"| VN
@@ -35,8 +36,8 @@ flowchart LR
     VN --> FUSE
     FUSE --> R["Diagnostic Report"]
 
-    classDef core fill:#EAF2FF,stroke:#7CA6FF,stroke-width:1.4px,color:#0F172A,rx:12,ry:12,padding:12px;
-    classDef out fill:#FFF7E8,stroke:#E7AE53,stroke-width:1.4px,color:#0F172A,rx:12,ry:12,padding:12px;
+    classDef core fill:#EAF2FF,stroke:#7CA6FF,stroke-width:1px,color:#0F172A,rx:8,ry:8,padding:2px;
+    classDef out fill:#FFF7E8,stroke:#E7AE53,stroke-width:1px,color:#0F172A,rx:8,ry:8,padding:2px;
     class A,R out;
     class SN,SAN,FN,MCN,VN,FUSE core;
 ```
