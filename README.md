@@ -22,27 +22,17 @@ The core pipeline is orchestrated using a **LangGraph** linear flow, with each n
 
 ```mermaid
 flowchart LR
-    subgraph Row1
-    direction LR
     A[API Request] --> SN[Sensor Node] --> SAN[Service Age Node]
-    end
-
-    subgraph Row2
-    direction LR
-    FN[Feature Node] --> MCN[Manual Context Node] --> VN[Vision Node] --> FUSE[Fusion Node] --> R[Diagnostic Report]
-    end
-
-    SAN -->|historical_logs present| FN
-    SAN -->|no historical_logs + instruction_manual present| MCN
-    SAN -->|no historical_logs + no manual + pump_image present| VN
-    SAN -->|no historical_logs + no manual + no image| FUSE
-
+    SAN -->|historical_logs present| FN[Feature Node]
+    SAN -->|historical_logs absent| MCN[Manual Context Node]
     FN -->|instruction_manual present| MCN
-    FN -->|no manual + pump_image present| VN
-    FN -->|no manual + no image| FUSE
-
-    MCN -->|no image| FUSE
+    FN -->|instruction_manual absent| VN[Vision Node]
+    MCN -->|pump_image present| VN
+    MCN -->|pump_image absent| FUSE[Fusion Node]
+    VN --> FUSE
+    FUSE --> R[Diagnostic Report]
 ```
+
 
 ---
 
