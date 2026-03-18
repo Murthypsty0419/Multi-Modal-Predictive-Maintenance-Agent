@@ -1,0 +1,3 @@
+pump_id,task_name,interval_hours,priority
+test_pump_005,Bearing Replacement,2000,3
+test_pump_005,Seal Inspection,1500,2

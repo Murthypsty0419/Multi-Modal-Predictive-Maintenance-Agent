@@ -21,8 +21,7 @@ node_modules/
 app/models/*.txt
 app/models/*.bin
 
-# Ignore data outputs and logs
-data/
+# Ignore logs
 logs/
 *.log
 
