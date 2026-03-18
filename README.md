@@ -96,14 +96,15 @@ Combines all modality risk scores using configurable weights. Generates a final 
 
 ### Prerequisites
 - Docker & Docker Compose
-- Python 3.12+ (for local development)
+- Python 3.11+ (for local development)
 - Supabase/Postgres instance (for manual/document storage)
 
 ### Quickstart (Docker)
 ```bash
 git clone https://github.com/Murthypsty0419/Multi-Modal-Predictive-Maintenance-Agent
-cd pump-health
-docker-compose up --build
+cd Multi-Modal-Predictive-Maintenance-Agent
+cp .env.example .env
+docker compose up -d --build
 ```
 The API will be available at `http://localhost:8000` and the Streamlit frontend at `http://localhost:8501`.
 
@@ -117,7 +118,7 @@ The API will be available at `http://localhost:8000` and the Streamlit frontend 
 2. Set up environment variables (see `.env.example`).
 3. Start the API:
 	```bash
-	uvicorn app.api.routes:app --reload
+    uvicorn app.main:app --reload
 	```
 4. Start the frontend:
 	```bash
@@ -156,17 +157,17 @@ To deploy this project as a hosted service (e.g., on a cloud VM, VPS, or managed
 ```bash
 # Clone the repository
 git clone https://github.com/Murthypsty0419/Multi-Modal-Predictive-Maintenance-Agent
-cd pump-health
+cd Multi-Modal-Predictive-Maintenance-Agent
 
-# Build and start all services (API, frontend, database)
+# Build and start all services (API, frontend)
 docker compose up --build -d
 ```
 - The API will be available at `http://<your-server-ip>:8000`
 - The Streamlit frontend will be available at `http://<your-server-ip>:8501`
 
 ### 4. Database Persistence & Backups
-- The PostgreSQL/pgvector database uses a Docker volume (`pgdata`) for persistent storage.
-- Set up regular backups of this volume for disaster recovery.
+- This stack uses Supabase (remote Postgres/pgvector), not a local database container.
+- Configure backups and retention in your Supabase project settings.
 
 ### 5. Monitoring & Logs
 - Use `docker compose logs -f` to monitor service logs.
