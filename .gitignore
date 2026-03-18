@@ -1,0 +1,42 @@
+# Ignore environment and secret files
+.env
+.env.*
+
+# OS/editor noise
+.DS_Store
+**/.DS_Store
+.vscode/
+.idea/
+
+# Ignore Python cache and virtual environments
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+
+# Node artifacts
+node_modules/
+
+# Ignore model weights and artifacts (if not tracked)
+app/models/*.txt
+app/models/*.bin
+
+# Ignore data outputs and logs
+data/
+logs/
+*.log
+
+# Allow example env
+!.env.example
+# Allow code and tracked files
+!*.py
+!*.md
+!*.toml
+!*.yml
+!*.yaml
+!*.sh
+!requirements.txt
+!frontend/
+!notebooks/
+!scripts/
+!tests/
